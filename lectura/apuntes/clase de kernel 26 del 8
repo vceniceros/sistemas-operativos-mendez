@@ -1,0 +1,155 @@
+# kernel
+
+el kernel hace de nexo entre los programas de sistema y el hardware
+
+evita que un programa monopolice el equipo(maneja el clock de interrupciones)
+
+
+## funciones principales del kernel
+
+- manejar memoria
+- schedualler
+- file system
+
+todo esto es la materia... jajan't
+
+## segmentetion fall
+
+cuando un programa se quiere conectar a una direccion de memoria invalida
+
+el kernel determina la politica de seguridad para el manejo de memorias y cpu
+
+## metodos de aislamiento de programas
+
+- RISC-V tiene tres modos en los que la CPU
+puede ejecutar instrucciones: modo
+máquina, modo supervisor y modo
+usuario.
+
+- X86 (el que vamos a usar)tiene cuatro modos en los que la CPU
+puede ejecutar instrucciones, solo usa 2:
+modo supervisor y modo usuario
+
+cuando ejecutemos programas lo haremos en uno de esos dos modos, supervisor y usuario
+
+## system call
+
+es un punto de entrada controlado al kernel,permitiendo a un proceso solicitar que el kernel realice alguna operación en su nombre
+
+## mecanismo de proteccion del hardware
+
+intrucciones de privilegio
+
+en risc v es con 3 modos, machine(no tan usado), usuario y supervisor
+
+
+## en x86
+
+hay 4 anillos de privilegio
+
+![privilegios del x86](image.png)
+
+
+![privilegios x86 extendido](image-1.png)
+
+de los 4 se usan 2
+
+## instrucciones privilegiadas
+
+todo instruccion que el modo usuario no puede ejecutar (lanza exception)
+
+ejemplo 
+
+- out - output to part: transfiere un byte de datos o una palabra de datos desde el registro al puerto de salida
+
+
+![como funciona el out](image-2.png)
+
+## IOPL
+
+controla el modo minimo necesario para escribir puertos I/O privilege method, configura en que anillo de privilegio deberias estar para ejecutar un out
+
+![IOPL](image-3.png)
+
+```unix
+Modo protegido en x86 (simplificado)
+Pseudocódigo de la instrucción OUT
+IF (PE = 1) AND ((VM = 1) OR (CPL > IOPL))
+THEN (* Virtual 8086 mode, or protected mode with CPL > IOPL *)
+IF NOT I-O-Permission (DEST, width(DEST))
+THEN #GP(0);
+FI;
+FI;
+[DEST] ← SRC; (* I/O address space used *)
+```
+
+![IOPL mas simplificado actualmente](image-4.png)
+
+para pasar de CPL 3 a CPL 0 mediante una system call hay un protocolo bien definido que los programas ejecutan
+
+## intrucciones privilegiadas
+
+risc y x86 tiene varias, un manual de cada uno, algunas son
+
+- MOV a/desde CR0-CR4 (Control Registers): Movimientos de datos hacia o desde los registros de control CR0, CR2, CR3 y CR4. Estos registros controlan aspectos críticos del procesador como el modo de protección, paginación, y depuración.
+-HLT (Halt): Detiene la ejecución del procesador hasta que ocurra una
+interrupción. Esta instrucción es usada típicamente en sistemas operativos para poner al procesador en un estado de espera
+
+- LGDT (Load Global Descriptor Table): Carga la dirección de la Global
+Descriptor Table (GDT) en el registro GDTR. Este registro es crucial para la administración de la memoria y la protección de segmentos en sistemas
+operativos que utilizan la memoria segmentada
+
+## instrucciones no privilegiadas
+
+- MOV (Move Data): Esta instrucción se utiliza para mover datos de una ubicación a otra. Es una de las instrucciones más básicas y se puede utilizar para mover datos entre registros, entre registros y memoria, o
+entre puertos de E/S
+
+- ADD, SUB (Arithmetic Operations): Estas instrucciones realizan operaciones aritméticas básicas como suma y resta en registros o entre registros y memoria
+
+- AND, OR, XOR, NOT (Logical Operations): Estas instrucciones realizan operaciones lógicas bit a bit sobre registros o entre registros y memoria.
+
+- MP, JE, JNE, JG, JL (Jump Instructions): Instrucciones de salto que permiten alterar el flujo de ejecución del programa basado en condiciones. Estas instrucciones no son privilegiadas porque solo afectan el flujo de control dentro del programa del usuario.
+
+- PUSH, POP (Stack Operations): Manipulan la pila al guardar (PUSH) o restaurar (POP) valores desde ella. Estas instrucciones son esenciales para la gestión del contexto y el flujo de control en los programas.
+
+- NOP (No Operation): Instrucción que no realiza ninguna operación, solo avanza el puntero de instrucción. Puede ser usada para alineación de código o para crear retrasos intencionales en la ejecución
+
+- INT n (Software Interrupt): Genera una interrupción de software. Aunque la propia instrucción no es privilegiada, su manejo depende del vector de interrupción, que puede implicar código privilegiado
+
+## proteccion en memoria
+
+![memoria virtual vs fisica](image-5.png)
+
+![registro de la tabla de paginas](image-6.png)
+
+- acceder a una pagina no de usuario -> exception
+- Escribir a una página de solo lectura -> exception
+- Acceder a una página no mapeada -> exception
+- Ejecutar una página no ejecutable -> exception
+
+![procesamiento general de codigos que no son de usuario cuando ejecutas como usuario](image-7.png)
+
+## timer interrups
+
+como hace el kernel para volver a tener sus procesos, los procesadores tienen un hardware timer que cada tanto tiempo interrumpe el proceso sacandocelo al usuario para darselo al kernel
+
+## como se cambia de kernel a usuario
+
+- interrupciones
+- excepciones del procesador
+- system calls
+
+- Una interrupción es una señal asincrónica hacia el procesador avisando que algún evento externo requiere su atención
+
+![ejemplo de interrupcion](image-8.png)
+
+- Una excepción es un evento de hardware causado por una aplicación de usuario que causa la transferencia del control al Kernel.
+
+- system call Un proceso de usuario puede hacer que la transición de modo sea hecha voluntariamente.
+
+
+![grafico mas avanzado de como funciona el kernel](image-9.png)
+
+
+todos los caminos conducen a C, todos los compiladores linkean a libC
+
